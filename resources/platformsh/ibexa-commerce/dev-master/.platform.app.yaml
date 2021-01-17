@@ -11,8 +11,6 @@ name: app
 dependencies:
     nodejs:
         yarn: "*"
-    php:
-        composer/composer: '^2.0'
 
 # The type of the application to build.
 type: php:7.3
@@ -35,7 +33,7 @@ relationships:
     # this relationship and the corresponding service in .platform/services.yaml
     #redissession: 'redissession:redis'
     # If you wish to use solr, uncomment this relationship and the corresponding service in .platform/services.yaml
-    #solr: 'solrsearch:collection1'
+    solr: 'solrsearch:collection1'
     # If you wish to use elasticsearch, uncomment this relationship and the corresponding service in .platform/services.yaml
     #elasticsearch: 'elasticsearch:elasticsearch'
 
@@ -58,7 +56,6 @@ variables:
         APP_HTTP_CACHE: 0
         # Warning: Only for Varnish on Platform.sh to workaround missing IP. Disable if you use Fastly or Symfony Proxy where this would be a security issue!
         TRUSTED_PROXIES: "REMOTE_ADDR"
-        HTTPCACHE_VARNISH_INVALIDATE_TOKEN: "testTokenMaster"
         # Change this if you use a different env than "prod"
         # If you change to "dev" remove "--no-dev" from the `composer install` command.
         APP_ENV: prod
@@ -86,8 +83,8 @@ disk: 3072
 
 # The mounts that will be performed when the package is deployed.
 mounts:
-    # PE Cluster Note: By default will set all to shared, so if moving to PE dedicated cluster you should ask platform.sh
-    #                  Support to make sure at least cache + logs are local, while you can let public/var be shared if you prefer that over DFS.
+# PE Cluster Note: By default will set all to shared, so if moving to PE dedicated cluster you should ask platform.sh
+#                  Support to make sure at least cache + logs are local, while you can let public/var be shared if you prefer that over DFS.
     'var/cache':
         source: local
         source_path: cache
@@ -133,7 +130,7 @@ hooks:
 
         if [ -z "$COMPOSER_AUTH" ]; then
             echo "TIP: If you need to authenticate against Github/Gitlab/updates.ez.no, use COMPOSER_AUTH env variable"
-            echo "See: https://docs.platform.sh/guides/general/composer-auth.html#set-the-envcomposer_auth-project-variable"
+            echo "See: https://docs.platform.sh/tutorials/composer-auth.html#set-the-envcomposerauth-project-variable"
         fi
 
         composer install --no-dev --prefer-dist --no-progress --no-interaction --optimize-autoloader
@@ -147,11 +144,11 @@ hooks:
         command -v nvm && nvm use 10.15.3
 
         if [ ! -f public/var/.platform.installed ]; then
-            # Configure ElasticSearch mappings
-            ##php bin/console ezplatform:elasticsearch:put-index-template
-
             # To workaround issues with p.sh Varnish we clear container cache & temporary set Symfony Proxy
             php bin/console doctrine:database:drop --force
+
+            # Configure ElasticSearch mappings
+            ##php bin/console ezplatform:elasticsearch:put-index-template
 
             export SKIP_HTTPCACHE_PURGE="1"
             rm -Rf var/cache/$APP_ENV/*.*
@@ -207,6 +204,22 @@ crons:
         # So if you are not on PE please change specs to "*/5 * * * *" to avoid warning on each deploy.
         spec: "* * * * *"
         cmd: "php bin/console ezplatform:cron:run"
+    refresh:
+        # Checks for changes and refresh cache
+        spec: "*/5 * * * *"
+        cmd: "php bin/console silversolutions:cache:refresh"
+    lostorders:
+        # Send lost orders to the ERP
+        spec: "*/5 * * * *"
+        cmd: "php bin/console silversolutions:lostorder:process"
+    writestat:
+        # Calculate statistical data for active sessions
+        spec: "*/5 * * * *"
+        cmd: "php bin/console silversolutions:sessions --env=prod write_stat"
+    jobsrun:
+        # Run background jobs
+        spec: "*/5 * * * *"
+        cmd: "php bin/console jms-job-queue:run -r 180"
     weekly:
         spec: "0 0 * * 0"
         cmd: "php bin/console ezplatform:check-urls --quiet"
