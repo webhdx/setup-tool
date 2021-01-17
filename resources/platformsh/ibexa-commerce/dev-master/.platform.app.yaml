@@ -11,6 +11,8 @@ name: app
 dependencies:
     nodejs:
         yarn: "*"
+    php:
+        composer/composer: '^2.0'
 
 # The type of the application to build.
 type: php:7.3
