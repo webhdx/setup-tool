@@ -151,8 +151,6 @@ hooks:
             ##php bin/console ezplatform:elasticsearch:put-index-template
 
             # To workaround issues with p.sh Varnish we clear container cache & temporary set Symfony Proxy
-            php bin/console doctrine:database:drop --force
-
             export SKIP_HTTPCACHE_PURGE="1"
             rm -Rf var/cache/$APP_ENV/*.*
             php bin/console cache:pool:clear cache.redis
