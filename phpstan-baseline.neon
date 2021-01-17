@@ -1,0 +1,32 @@
+parameters:
+	ignoreErrors:
+		-
+			message: "#^Method Ibexa\\\\Platform\\\\SetupTool\\\\Command\\\\IbexaSetupCommand\\:\\:configure\\(\\) has no return typehint specified\\.$#"
+			count: 1
+			path: src/lib/Command/IbexaSetupCommand.php
+
+		-
+			message: "#^Method Ibexa\\\\Platform\\\\SetupTool\\\\Command\\\\IbexaSetupCommand\\:\\:execute\\(\\) should return int but return statement is missing\\.$#"
+			count: 1
+			path: src/lib/Command/IbexaSetupCommand.php
+
+		-
+			message: "#^Method Ibexa\\\\Platform\\\\SetupTool\\\\SetupTool\\:\\:activate\\(\\) has no return typehint specified\\.$#"
+			count: 1
+			path: src/lib/SetupTool.php
+
+		-
+			message: "#^Method Ibexa\\\\Platform\\\\SetupTool\\\\SetupTool\\:\\:deactivate\\(\\) has no return typehint specified\\.$#"
+			count: 1
+			path: src/lib/SetupTool.php
+
+		-
+			message: "#^Parameter \\#2 \\$newline of method Composer\\\\IO\\\\IOInterface\\:\\:write\\(\\) expects bool, int given\\.$#"
+			count: 2
+			path: src/lib/SetupTool.php
+
+		-
+			message: "#^Method Ibexa\\\\Platform\\\\SetupTool\\\\SetupTool\\:\\:uninstall\\(\\) has no return typehint specified\\.$#"
+			count: 1
+			path: src/lib/SetupTool.php
+
